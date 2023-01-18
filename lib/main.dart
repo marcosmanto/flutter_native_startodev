@@ -28,9 +28,19 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  static const platform = const MethodChannel('floating_button');
+  static const platform = MethodChannel('floating_button');
 
   int count = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    platform.setMethodCallHandler((call) async {
+      if (call.method == 'touch') {
+        setState(() => count += 1);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +82,14 @@ class _HomeState extends State<Home> {
                 platform.invokeMethod('not_implemented_native_method');
               },
               child: Text('Not implemented'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                platform
+                    .invokeMethod('isShowing')
+                    .then((isShowing) => print(isShowing));
+              },
+              child: Text('Float Button is visible?'),
             ),
           ],
         ),

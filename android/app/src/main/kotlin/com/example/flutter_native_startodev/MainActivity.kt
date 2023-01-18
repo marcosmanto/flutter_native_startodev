@@ -16,7 +16,8 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
+        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        channel.setMethodCallHandler {
                 call, result ->
 
             when(call.method) {
@@ -24,6 +25,11 @@ class MainActivity: FlutterActivity() {
                     Log.d("APP_MESSAGE", "*** Method CREATE ****")
                     val imageView = ImageView(applicationContext)
                     imageView.setImageResource(R.drawable.plus)
+                    imageView.setOnClickListener {
+                        Log.d("APP_MESSAGE", "*** Adding one from Kotlin code ****")
+                        channel.invokeMethod("touch", null)
+                    }
+
                     FloatWindow.with(applicationContext)
                         .setView(imageView)
                         .setWidth(Screen.width,.15F)
@@ -33,16 +39,18 @@ class MainActivity: FlutterActivity() {
                         .setDesktopShow(true)
                         .build()
 
-                    //result.success("OK")
+                    result.success("OK")
                 }
                 "show" -> {
                     Log.d("APP_MESSAGE", "*** Method SHOW ****")
                     FloatWindow.get().show()
                 }
                 "hide" -> FloatWindow.get().hide()
+                "isShowing" -> result.success(FloatWindow.get().isShowing)
+
                 else -> {
                     Log.d("APP_MESSAGE", "*** Method not implemented ****")
-                    //result.notImplemented()
+                    result.notImplemented()
                 }
             }
 
@@ -55,5 +63,10 @@ class MainActivity: FlutterActivity() {
                 result.notImplemented()
             }*/
         }
+    }
+
+    override fun onDestroy() {
+        FloatWindow.destroy()
+        super.onDestroy()
     }
 }
